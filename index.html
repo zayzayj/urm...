@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Valentines?</title>
+  <title>For Safwani.</title>
   <style>
     :root{
       --yes:#22c55e;
@@ -11,6 +11,7 @@
       --border:#e5e7eb;
       --text:#111827;
     }
+
     body{
       margin:0;
       height:100vh;
@@ -20,34 +21,41 @@
       background:#fff;
       font-family: Arial, sans-serif;
       color:var(--text);
+      overflow:hidden; /* keeps confetti tidy */
     }
+
     .card{
       width:min(560px, 92vw);
       border:1px solid var(--border);
       border-radius:10px;
       padding:24px 18px;
       text-align:center;
+      background:#fff;
     }
-    .q{
-      margin:10px 0 16px;
-      font-size:18px;
-      font-weight:400;
-    }
+
     .gif{
       width:160px;
       height:auto;
       border-radius:10px;
       display:block;
-      margin:0 auto 8px;
+      margin:0 auto 10px;
     }
+
+    .q{
+      margin:0 0 16px;
+      font-size:18px;
+      font-weight:400;
+    }
+
     .btnRow{
       display:flex;
       gap:14px;
       justify-content:center;
       align-items:center;
-      margin-top:8px;
-      min-height:70px;
+      min-height:86px;
+      margin-top:6px;
     }
+
     button{
       border:1px solid #00000022;
       border-radius:6px;
@@ -57,28 +65,60 @@
       user-select:none;
       -webkit-tap-highlight-color:transparent;
       transform-origin:center;
-      transition: transform 120ms ease;
+      transition: transform 140ms ease;
     }
+
     #yes{
       background:var(--yes);
       color:#fff;
       transform: scale(1);
     }
+
     #no{
       background:var(--no);
       color:#fff;
       transform: scale(1);
     }
+
     .hint{
       margin:14px 0 0;
       font-size:12px;
       color:#6b7280;
     }
+
+    /* CONFETTI POP */
+    .confetti{
+      position: fixed;
+      top: -12px;
+      width: 10px;
+      height: 16px;
+      opacity: 0.95;
+      pointer-events: none;
+      animation: fall linear forwards;
+      z-index: 9999;
+      border-radius: 2px;
+    }
+
+    @keyframes fall{
+      to{
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Tiny extra "pop" feel */
+    .pop {
+      animation: pop 220ms ease;
+    }
+    @keyframes pop {
+      50% { transform: scale(1.08); }
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
-    <!-- Bear GIF (upload as bear.gif in your repo) -->
+    <!-- First GIF (keep named bear.gif) -->
     <img class="gif" src="bear.gif" alt="bear gif" />
 
     <p class="q">hey so… would you like to be my valentines snotty? 🙈</p>
@@ -88,25 +128,17 @@
       <button id="no">no</button>
     </div>
 
-    <p class="hint">keep pressing no (I mean, if you want to...) 😭</p>
+    <p class="hint">try Keep pressing no (i mean if you want to) 🙂</p>
   </div>
 
   <script>
     const yesBtn = document.getElementById("yes");
     const noBtn  = document.getElementById("no");
 
-    // NO text sequence you asked for
-    const noTexts = [
-      "no",
-      "are you sure",
-      "positive?",
-      "certain?",
-      "please pretty",
-      "press yes"
-    ];
+    // NO text sequence (exactly as requested)
+    const noTexts = ["no", "are you sure?", "positive?", "certain?", "please pretty...", "haha."];
 
-    // Each NO click makes NO smaller and YES bigger
-    // (6 states because you have 6 texts)
+    // Each NO click: NO smaller, YES bigger
     const noScales  = [1, 0.90, 0.78, 0.64, 0.48, 0.22];
     const yesScales = [1, 1.18, 1.40, 1.70, 2.10, 2.65];
 
@@ -114,34 +146,51 @@
 
     function applySizes(){
       const i = Math.min(step, noTexts.length - 1);
+
       noBtn.textContent = noTexts[i];
       noBtn.style.transform  = `scale(${noScales[i]})`;
       yesBtn.style.transform = `scale(${yesScales[i]})`;
 
-      // Make the last NO state tiny and a bit harder to hit (but still clickable)
+      // Make the last NO state tiny & readable
       if (i === noTexts.length - 1) {
         noBtn.style.padding = "6px 10px";
         noBtn.style.fontSize = "11px";
       }
     }
 
+    // Confetti burst
+    function confettiPop(amount = 100) {
+      const colors = ["#22c55e","#ef4444","#facc15","#ec4899","#60a5fa","#a78bfa"];
+
+      for (let i = 0; i < amount; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+
+        c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        c.style.left = (Math.random() * window.innerWidth) + "px";
+        c.style.animationDuration = (1.4 + Math.random() * 1.6) + "s";
+        c.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3200);
+      }
+    }
+
+    // NO: only changes text + shrinks (does NOT move)
     noBtn.addEventListener("click", (e) => {
       e.preventDefault();
       if (step < noTexts.length - 1) step++;
       applySizes();
     });
 
-    // Mobile tap friendliness
-    noBtn.addEventListener("touchstart", (e) => {
-      // Let touch also count as a click
-      // (prevents weird double behaviour on some phones)
-      e.preventDefault();
-      if (step < noTexts.length - 1) step++;
-      applySizes();
-    }, { passive: false });
-
+    // YES: confetti pop then redirect
     yesBtn.addEventListener("click", () => {
-      window.location.href = "yes.html";
+      yesBtn.classList.add("pop");
+      confettiPop(110);
+
+      setTimeout(() => {
+        window.location.href = "yes.html";
+      }, 900);
     });
 
     applySizes();
